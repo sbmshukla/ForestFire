@@ -1,35 +1,38 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+import streamlit as st
 import pickle
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import RidgeCV
-application = Flask(__name__)
-app = application
+import numpy as np
 
+# Load scaler and model
 scaler = pickle.load(open('models/scaler.pkl', 'rb'))
 ridge_model = pickle.load(open('models/ridge.pkl', 'rb'))
-@app.route("/")
-def index():
-    return render_template("index.html")
 
-@app.route("/preditdata", methods =['GET', 'POST'])
-def predict_datapoint():
-    if request.method == 'POST':
-        # Get form values
-        Temperature = float(request.form["Temperature"])
-        RH = float(request.form["RH"])
-        Ws = float(request.form["Ws"])
-        Rain = float(request.form["Rain"])
-        FFMC = float(request.form["FFMC"])
-        DMC = float(request.form["DMC"])
-        ISI = float(request.form["ISI"])
-        Classes = request.form["Classes"]
-        Region = request.form["Region"]
+st.set_page_config(page_title="FWI Prediction", page_icon="🔥", layout="centered")
 
+st.title("🔥 Fire Weather Index (FWI) Prediction")
 
-        new_data_scaled = scaler.transform([[Temperature, RH, Ws, Rain, FFMC, DMC, ISI, Classes, Region]])
-        return render_template('home.html', result = ridge_model.predict(new_data_scaled)[0])
-    else:
-        return render_template('home.html')
+# Create form layout
+with st.form("prediction_form"):
+    col1, col2 = st.columns(2)
 
-if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0')
+    with col1:
+        Temperature = st.number_input("🌡️ Temperature", value=20.0)
+        RH = st.number_input("💧 Relative Humidity", value=50.0)
+        Ws = st.number_input("🌬️ Wind Speed", value=10.0)
+        Rain = st.number_input("☔ Rainfall", value=0.0)
+        FFMC = st.number_input("🔥 FFMC", value=85.0)
+
+    with col2:
+        DMC = st.number_input("🌲 DMC", value=20.0)
+        ISI = st.number_input("⚡ ISI", value=5.0)
+        Classes = st.number_input("📊 Classes (numeric)", value=0.0)
+        Region = st.number_input("🌍 Region (numeric)", value=0.0)
+
+    submit = st.form_submit_button("Predict")
+
+if submit:
+    # Scale and predict
+    features = np.array([[Temperature, RH, Ws, Rain, FFMC, DMC, ISI, Classes, Region]])
+    new_data_scaled = scaler.transform(features)
+    prediction = ridge_model.predict(new_data_scaled)[0]
+
+    st.success(f"🔥 Predicted FWI = {prediction:.2f}")
