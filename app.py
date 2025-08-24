@@ -1,16 +1,10 @@
 import streamlit as st
 import pickle
 import numpy as np
-import os
 
-# Load scaler and model
-BASE_DIR = os.path.dirname(__file__)
-scaler_path = os.path.join(BASE_DIR, 'models', 'scaler.pkl')
 
-scaler = pickle.load(open(scaler_path, 'rb'))
-
-ridge_path = os.path.join(BASE_DIR, 'models', 'ridge.pkl')
-ridge_model = pickle.load(open(ridge_path, 'rb'))
+scaler = pickle.load(open('models/scaler.pkl', 'rb'))
+ridge_model = pickle.load(open('models/ridge.pkl', 'rb'))
 
 st.set_page_config(page_title="FWI Prediction", page_icon="🔥", layout="centered")
 
